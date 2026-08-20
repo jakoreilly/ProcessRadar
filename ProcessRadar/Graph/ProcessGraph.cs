@@ -39,6 +39,13 @@ public sealed class ProcessGraph
         get { lock (_gate) return FilteredLocked().ToList(); }
     }
 
+    /// <summary>Every tracked node regardless of <see cref="NameFilter"/> - for Export Logs, where a
+    /// filter narrowing what's on screen shouldn't silently narrow what gets written to disk.</summary>
+    public IReadOnlyList<ProcessNode> AllNodes
+    {
+        get { lock (_gate) return _nodes.Values.ToList(); }
+    }
+
     public IReadOnlyList<InjectionEdge> InjectionEdges
     {
         get { lock (_gate) return _injectionEdges.Values.ToList(); }

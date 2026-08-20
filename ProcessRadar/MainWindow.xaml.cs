@@ -1,7 +1,9 @@
 using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Microsoft.Win32;
 using ProcessRadar.Analysis;
 using ProcessRadar.Capture;
 using ProcessRadar.Diagnostics;
@@ -29,6 +31,10 @@ namespace ProcessRadar;
 public partial class MainWindow : Window
 {
     private const int MaxAnomalyLogEntries = 200;
+
+    /// <summary>Full-session anomaly history kept for Export Logs, separate from the 200-entry UI
+    /// list - that cap exists to keep the ListBox fast, not to decide what's worth exporting.</summary>
+    private const int MaxAnomalyHistoryEntries = 5000;
 
     /// <summary>The process list gets an item per ETW event and a WPF ListBox degrades badly past
     /// a few thousand of them, so it is capped the way the anomaly log already was - an unbounded
@@ -82,6 +88,17 @@ public partial class MainWindow : Window
     private int? _selectedPid;
     private ProcessInspectionDetail? _selectedDetail;
 
+    // --- Export logs ---------------------------------------------------------------------------
+
+    /// <summary>Oldest-first; only ever touched from the UI thread, same as <see cref="LogAnomaly"/>
+    /// which populates it.</summary>
+    private readonly List<AnomalyEvent> _anomalyHistory = new();
+
+    /// <summary>Set once the window has closed. Both the export callback and the trace-fault
+    /// callback arrive on background threads and can land after teardown, where touching a control
+    /// or showing a dialog throws rather than doing anything useful.</summary>
+    private bool _closed;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -93,7 +110,12 @@ public partial class MainWindow : Window
         _service.ProcessStarted += OnProcessStarted;
         _service.ProcessStopped += OnProcessStopped;
         _service.InjectionDetected += OnInjectionDetected;
-        Closed += (_, _) => _service.Dispose();
+        _service.TraceFaulted += OnTraceFaulted;
+        Closed += (_, _) =>
+        {
+            _closed = true;
+            _service.Dispose();
+        };
 
         _housekeepingTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
         _housekeepingTimer.Tick += (_, _) =>
@@ -145,22 +167,42 @@ public partial class MainWindow : Window
         };
     }
 
-    private void SnapshotButton_Click(object sender, RoutedEventArgs e)
+    private async void SnapshotButton_Click(object sender, RoutedEventArgs e)
     {
-        var sw = Stopwatch.StartNew();
-        ProcessList.Items.Clear();
-        var snapshot = ProcessEnumerationService.Snapshot();
-        var enumerated = sw.Elapsed;
+        // The WMI query behind Snapshot() routinely takes hundreds of ms to a few seconds, and this
+        // is the one path the README promises works instantly without admin - run it off the UI
+        // thread so it doesn't freeze the whole window (zoom/pan/filter included) while it waits.
+        SnapshotButton.IsEnabled = false;
+        try
+        {
+            var sw = Stopwatch.StartNew();
+            var snapshot = await Task.Run(ProcessEnumerationService.Snapshot);
+            var enumerated = sw.Elapsed;
 
-        _graph.LoadSnapshot(snapshot);
-        _count = snapshot.Count;
-        CountText.Text = $"{_count} processes";
+            ProcessList.Items.Clear();
+            _graph.LoadSnapshot(snapshot);
+            _count = snapshot.Count;
+            CountText.Text = $"{_count} processes";
 
-        foreach (var p in snapshot.OrderBy(p => p.Pid))
-            ProcessList.Items.Add(Format(p));
+            foreach (var p in snapshot.OrderBy(p => p.Pid))
+                ProcessList.Items.Add(Format(p));
 
-        DebugLog.Info("Snapshot", $"{snapshot.Count} processes enumerated in {enumerated.TotalMilliseconds:F0}ms; " +
-                                  $"graph and list populated in {sw.Elapsed.TotalMilliseconds:F0}ms total");
+            DebugLog.Info("Snapshot", $"{snapshot.Count} processes enumerated in {enumerated.TotalMilliseconds:F0}ms; " +
+                                      $"graph and list populated in {sw.Elapsed.TotalMilliseconds:F0}ms total");
+        }
+        catch (Exception ex)
+        {
+            // Moving the query onto a task made this reachable as an async void escape, which would
+            // take the whole app down. WMI can refuse for reasons outside our control (the service
+            // being restarted, a repository hiccup), and a dead Snapshot button is not worth a crash.
+            DebugLog.Warn("Snapshot", $"process enumeration failed: {ex.Message}");
+            MessageBox.Show(this, $"Could not enumerate processes:\n{ex.Message}",
+                "Process Radar", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+        finally
+        {
+            SnapshotButton.IsEnabled = true;
+        }
     }
 
     private void LiveButton_Click(object sender, RoutedEventArgs e)
@@ -176,6 +218,75 @@ public partial class MainWindow : Window
             DebugLog.Warn("Capture", $"live trace refused: {ex.Message}");
             MessageBox.Show(ex.Message, "Process Radar", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
+    }
+
+    /// <summary>Arrives on a thread pool thread. The overwhelmingly likely cause is the window
+    /// being closed out from under a live trace, so a fault after teardown is expected and silent -
+    /// only a fault while the window is still up is worth interrupting anyone over.</summary>
+    private void OnTraceFaulted(object? sender, Exception ex)
+    {
+        Dispatcher.BeginInvoke(() =>
+        {
+            DebugLog.Warn("Capture", $"live trace stopped unexpectedly: {ex.Message}");
+            if (_closed)
+                return;
+
+            // The processing loop is gone but the session object is not; without this, restarting
+            // overwrites the field and leaks the old session's native handles.
+            _service.StopLiveTrace();
+            LiveButton.IsEnabled = true;
+            MessageBox.Show(this, $"Live trace stopped unexpectedly and has been turned off:\n{ex.Message}",
+                "Process Radar", MessageBoxButton.OK, MessageBoxImage.Warning);
+        });
+    }
+
+    // --- Export logs ---------------------------------------------------------------------------
+
+    /// <summary>Writes the full process table (ignoring the name filter - a narrowed view on screen
+    /// shouldn't silently narrow what gets written to disk) and the anomaly history to one CSV file.
+    /// The write itself runs off the UI thread since it can cover thousands of rows on a long-running
+    /// trace - the same reasoning as moving <see cref="SnapshotButton_Click"/>'s WMI call off it.</summary>
+    private void ExportButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new SaveFileDialog
+        {
+            Title = "Export Process Radar logs",
+            FileName = $"processradar-export-{DateTime.Now:yyyyMMdd-HHmmss}.csv",
+            Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*",
+            DefaultExt = ".csv",
+        };
+        if (dialog.ShowDialog(this) != true)
+            return;
+
+        var path = dialog.FileName;
+        var processes = _graph.AllNodes;
+        var anomalies = _anomalyHistory.ToList();
+
+        Task.Run(() =>
+        {
+            try
+            {
+                LogExporter.Export(path, processes, anomalies);
+                DebugLog.Info("Export", $"exported {processes.Count} processes and {anomalies.Count} anomalies to {path}");
+                Report(MessageBoxImage.Information,
+                    $"Exported {processes.Count} processes and {anomalies.Count} anomalies to:\n{path}");
+            }
+            catch (Exception ex)
+            {
+                // Deliberately broad: this is the top of a background task, so anything not caught
+                // here is an unobserved exception and the user is left staring at a button that
+                // appeared to do nothing. A path the save dialog accepted can still fail on write
+                // for reasons ranging from IO to an encoding refusal.
+                DebugLog.Warn("Export", $"export to {path} failed: {ex.Message}");
+                Report(MessageBoxImage.Error, $"Export failed: {ex.Message}");
+            }
+        });
+
+        void Report(MessageBoxImage icon, string message) => Dispatcher.BeginInvoke(() =>
+        {
+            if (!_closed)
+                MessageBox.Show(this, message, "Process Radar", MessageBoxButton.OK, icon);
+        });
     }
 
     private void GraphCanvas_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -350,6 +461,10 @@ public partial class MainWindow : Window
         while (AnomalyList.Items.Count > MaxAnomalyLogEntries)
             AnomalyList.Items.RemoveAt(AnomalyList.Items.Count - 1);
         DebugLog.Info("Anomaly", $"[{anomaly.Kind}] pid {anomaly.Pid}: {anomaly.Description}");
+
+        _anomalyHistory.Add(anomaly);
+        if (_anomalyHistory.Count > MaxAnomalyHistoryEntries)
+            _anomalyHistory.RemoveAt(0);
     }
 
     private void OnProcessStopped(object? sender, int pid)
