@@ -24,8 +24,14 @@ public static class DebugLog
     private static bool _initialized;
 
     /// <summary>Master switch - flipped by the Debug toggle in the toolbar. Off means the
-    /// formatting cost isn't paid either, so leaving log calls on hot paths is fine.</summary>
-    public static bool Enabled { get; set; } = true;
+    /// formatting cost isn't paid either, so leaving log calls on hot paths is fine.
+    ///
+    /// Defaults to off, and must stay in sync with <c>DebugToggle</c>'s <c>IsChecked</c> in
+    /// MainWindow.xaml - an unchecked toggle raises no event at load, so this default *is* the
+    /// startup state. Off by default because the log records executable and module paths, which
+    /// on a real machine embed the operator's username and directory layout; that should not be
+    /// written to disk unless someone asked for it.</summary>
+    public static bool Enabled { get; set; }
 
     /// <summary>Where this run's log went, for the "Debug" toggle to show the user.</summary>
     public static string? LogFilePath { get; private set; }

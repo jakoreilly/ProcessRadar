@@ -6,6 +6,14 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+
+    <!-- SkiaSharp.Views.WPF (current at 4.151.1) still pulls OpenTK 3.3.1, which only ships
+         .NETFramework assets, so restore emits NU1701 for it on net10.0-windows. This app draws
+         through SKElement - the software surface - and never touches GLWpfControl or OpenTK at
+         runtime, so the framework mismatch is inert. Suppressed here rather than left to make
+         every clean build look broken. Revisit if SkiaSharp drops the OpenTK dependency, or if
+         this app ever moves to SKGLElement, at which point the warning becomes real. -->
+    <NoWarn>$(NoWarn);NU1701</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

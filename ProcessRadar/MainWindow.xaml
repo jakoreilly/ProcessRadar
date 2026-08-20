@@ -33,8 +33,8 @@
             <TextBlock Text="drag to pan" Foreground="#475569" VerticalAlignment="Center" Margin="10,0,0,0" FontSize="11"/>
 
             <ToggleButton x:Name="DebugToggle" Content="Debug" Width="70" Margin="20,0,0,0"
-                          IsChecked="True" Checked="DebugToggle_Changed" Unchecked="DebugToggle_Changed"
-                          ToolTip="Frame timing / layout / capture diagnostics, on-canvas and to a log file"/>
+                          IsChecked="False" Checked="DebugToggle_Changed" Unchecked="DebugToggle_Changed"
+                          ToolTip="Frame timing / layout / capture diagnostics - on-canvas HUD plus a log file under LocalAppData/ProcessRadar/logs. Off by default: the log records executable and module paths."/>
             <TextBlock x:Name="DebugPathText" Foreground="#475569" VerticalAlignment="Center" Margin="10,0,0,0"
                        FontSize="10" TextTrimming="CharacterEllipsis" MaxWidth="320"/>
         </StackPanel>

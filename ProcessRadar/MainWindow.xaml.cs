@@ -553,8 +553,10 @@ public partial class MainWindow : Window
 
     private void DebugToggle_Changed(object sender, RoutedEventArgs e)
     {
-        // IsChecked="True" in the XAML raises Checked while InitializeComponent is still building
-        // the tree, so DebugPathText and GraphCanvas below don't exist yet on that first call.
+        // Kept from when the toggle defaulted to IsChecked="True", which raised Checked while
+        // InitializeComponent was still building the tree, before DebugPathText and GraphCanvas
+        // existed. The toggle now starts unchecked so no event fires at load, but the guard stays:
+        // flipping the default back in XAML should not resurrect a null-reference crash.
         if (!IsInitialized)
             return;
 

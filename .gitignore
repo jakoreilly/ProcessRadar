@@ -1,5 +1,24 @@
-## .NET
+## .NET build output
 bin/
 obj/
+publish/
+artifacts/
+TestResults/
 *.user
+
+## IDE / editor
 .vs/
+.vscode/
+.idea/
+*.suo
+*.userprefs
+*.DotSettings.user
+
+## Process Radar runtime output
+# The debug log records executable and module paths from the machine it ran on.
+*.log
+
+## OS
+Thumbs.db
+Desktop.ini
+.DS_Store

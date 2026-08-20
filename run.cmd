@@ -11,7 +11,7 @@ if %errorlevel% neq 0 (
 
 cd /d "%~dp0"
 echo Building and launching Process Radar...
-dotnet run --project "ProcessRadar\ProcessRadar.csproj" -c Debug
+dotnet run --project "ProcessRadar\ProcessRadar.csproj" -c Release
 if %errorlevel% neq 0 (
     echo.
     echo Build or run failed - see errors above.
