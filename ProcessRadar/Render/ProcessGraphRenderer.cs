@@ -43,6 +43,12 @@ public static class ProcessGraphRenderer
     private static readonly SKColor HudColor = new(0x94, 0xa3, 0xb8);
     private static readonly SKColor HudBackground = new(0x0b, 0x11, 0x20, 200);
 
+    /// <summary>Looked up once and reused for every frame's node labels and HUD text - creating a
+    /// fresh <see cref="SKTypeface"/> per <see cref="Draw"/> call (10fps, plus the debug HUD) did a
+    /// font-manager lookup and left the native handle for the GC finalizer every single frame.
+    /// The fallback matters on a machine without Consolas; the old call passed the null straight on.</summary>
+    private static readonly SKTypeface MonoTypeface = SKTypeface.FromFamilyName("Consolas") ?? SKTypeface.Default;
+
     /// <summary>Marching-ants speed for injection edges, in dash-pattern units/second - fast
     /// enough to read as "this is live and different from a static tree edge" at a glance.</summary>
     private const double InjectionDashSpeed = 24;
@@ -148,7 +154,7 @@ public static class ProcessGraphRenderer
             Color = AnomalyGlow,
             ImageFilter = SKImageFilter.CreateBlur((float)(10 * sizeFactor), (float)(10 * sizeFactor)),
         };
-        using var font = new SKFont(SKTypeface.FromFamilyName("Consolas"), (float)(11 * sizeFactor));
+        using var font = new SKFont(MonoTypeface,(float)(11 * sizeFactor));
         using var textPaint = new SKPaint { IsAntialias = true, Color = LabelColor };
 
         var drawLabels = view.Zoom >= LabelZoomThreshold;
@@ -202,7 +208,7 @@ public static class ProcessGraphRenderer
     /// zoom/pan transform so it stays legible and put no matter where the view is.</summary>
     private static void DrawHud(SKCanvas canvas, IReadOnlyList<string> lines, double deviceScale)
     {
-        using var font = new SKFont(SKTypeface.FromFamilyName("Consolas"), (float)(11 * deviceScale));
+        using var font = new SKFont(MonoTypeface,(float)(11 * deviceScale));
         using var textPaint = new SKPaint { IsAntialias = true, Color = HudColor };
         using var boxPaint = new SKPaint { IsAntialias = true, Style = SKPaintStyle.Fill, Color = HudBackground };
 

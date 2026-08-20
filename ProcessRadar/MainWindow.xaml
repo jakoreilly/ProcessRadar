@@ -32,6 +32,9 @@
                     ToolTip="Back to 100% and centred (double-click the diagram does the same)"/>
             <TextBlock Text="drag to pan" Foreground="#475569" VerticalAlignment="Center" Margin="10,0,0,0" FontSize="11"/>
 
+            <Button x:Name="ExportButton" Content="Export logs" Width="90" Margin="20,0,0,0" Click="ExportButton_Click"
+                    ToolTip="Save the current process table and the anomaly history to a CSV file. Like the debug log, it records executable paths - review before sharing."/>
+
             <ToggleButton x:Name="DebugToggle" Content="Debug" Width="70" Margin="20,0,0,0"
                           IsChecked="False" Checked="DebugToggle_Changed" Unchecked="DebugToggle_Changed"
                           ToolTip="Frame timing / layout / capture diagnostics - on-canvas HUD plus a log file under LocalAppData/ProcessRadar/logs. Off by default: the log records executable and module paths."/>

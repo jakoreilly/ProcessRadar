@@ -39,6 +39,12 @@ public sealed class ProcessEnumerationService : IDisposable
     public event EventHandler<int>? ProcessStopped;
     public event EventHandler<InjectionSignal>? InjectionDetected;
 
+    /// <summary>Raised if the ETW processing loop dies (an event handler threw, most likely while
+    /// racing window teardown) - without this, <see cref="_sessionTask"/> was fire-and-forget and a
+    /// fault silently ended live tracing for the rest of the session with no way to notice or retry.
+    /// Raised on a thread pool thread, so a UI subscriber has to marshal.</summary>
+    public event EventHandler<Exception>? TraceFaulted;
+
     public static IReadOnlyList<ProcessInfo> Snapshot()
     {
         var results = new List<ProcessInfo>();
@@ -114,6 +120,9 @@ public sealed class ProcessEnumerationService : IDisposable
         };
 
         _sessionTask = Task.Run(() => _session.Source.Process());
+        _ = _sessionTask.ContinueWith(
+            t => TraceFaulted?.Invoke(this, t.Exception!.GetBaseException()),
+            TaskContinuationOptions.OnlyOnFaulted);
     }
 
     public void StopLiveTrace()

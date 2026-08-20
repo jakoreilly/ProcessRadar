@@ -71,6 +71,10 @@ without admin, only **Snapshot** works.
    without new spawns/exits animating it away. Unfreezing catches you up to
    whatever happened underneath while paused.
 8. **Zoom / pan** — mouse wheel to zoom, drag to pan, double-click to reset.
+9. **Export logs** — saves the full process table (independent of the filter
+   box) and the whole-session anomaly history to one CSV file, for attaching
+   to a bug report or reviewing offline. Runs off the UI thread so exporting a
+   long-running trace doesn't stall the window.
 
 ## Diagnostics and privacy
 
@@ -89,7 +93,14 @@ a bug report or sharing it.
 
 The click-to-inspect panel also surfaces command lines (via WMI), which can
 contain credentials passed as arguments by other software. That data stays
-on screen and is never written to the log.
+on screen and is never written to the log or an export.
+
+**Export logs** (in the toolbar) writes the same kind of data — executable
+paths, process names, anomaly descriptions — to a CSV file you choose.
+Nothing is transmitted anywhere; review the file before attaching it to a
+bug report or sharing it, same as the debug log. Text fields that a
+spreadsheet would otherwise treat as a formula are escaped on the way out,
+since process names and paths are chosen by whatever is being observed.
 
 ## Troubleshooting
 
