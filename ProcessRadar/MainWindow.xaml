@@ -1,0 +1,65 @@
+<Window x:Class="ProcessRadar.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ProcessRadar"
+        xmlns:skia="clr-namespace:SkiaSharp.Views.WPF;assembly=SkiaSharp.Views.WPF"
+        mc:Ignorable="d"
+        Title="Process Radar" Height="600" Width="1100"
+        Background="#0b1120">
+    <DockPanel Margin="12">
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
+            <Button x:Name="SnapshotButton" Content="Snapshot" Width="100" Click="SnapshotButton_Click"/>
+            <Button x:Name="LiveButton" Content="Start live trace (admin)" Width="180" Margin="10,0,0,0" Click="LiveButton_Click"/>
+            <TextBlock x:Name="CountText" Foreground="#94a3b8" VerticalAlignment="Center" Margin="16,0,0,0" Text="0 processes"/>
+            <TextBlock x:Name="GraphText" Foreground="#5eead4" VerticalAlignment="Center" Margin="16,0,0,0" Text="0 nodes"/>
+            <TextBlock x:Name="InjectionText" Foreground="#f87171" VerticalAlignment="Center" Margin="16,0,0,0" Text="0 injection signals"/>
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
+            <TextBlock Text="Filter:" Foreground="#94a3b8" VerticalAlignment="Center" Margin="0,0,6,0"/>
+            <TextBox x:Name="FilterBox" Width="220" TextChanged="FilterBox_TextChanged"/>
+            <Button x:Name="FreezeButton" Content="Freeze frame" Width="110" Margin="16,0,0,0" Click="FreezeButton_Click"/>
+        </StackPanel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="280"/>
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" BorderBrush="#1e293b" BorderThickness="1" Margin="0,0,10,0">
+                <Grid>
+                    <skia:SKElement x:Name="GraphCanvas" PaintSurface="GraphCanvas_PaintSurface" SizeChanged="GraphCanvas_SizeChanged"
+                                    MouseLeftButtonDown="GraphCanvas_MouseLeftButtonDown"/>
+                    <Border x:Name="InspectorPanel" Visibility="Collapsed" Background="#0b1120" Opacity="0.92"
+                            BorderBrush="#5eead4" BorderThickness="1" CornerRadius="4"
+                            HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10" Padding="10" MinWidth="260" MaxWidth="360">
+                        <StackPanel>
+                            <Grid>
+                                <TextBlock x:Name="InspectorTitle" Foreground="#5eead4" FontWeight="Bold" FontFamily="Consolas"/>
+                                <Button x:Name="InspectorCloseButton" Content="x" Width="20" Height="20" Padding="0"
+                                        HorizontalAlignment="Right" Click="InspectorCloseButton_Click"/>
+                            </Grid>
+                            <TextBlock x:Name="InspectorPath" Foreground="#e8ecf5" FontFamily="Consolas" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                            <TextBlock x:Name="InspectorTimes" Foreground="#e8ecf5" FontFamily="Consolas" FontSize="11"/>
+                            <TextBlock x:Name="InspectorModules" Foreground="#e8ecf5" FontFamily="Consolas" FontSize="11"/>
+                            <TextBlock x:Name="InspectorAnomaly" Foreground="#f87171" FontFamily="Consolas" FontSize="11"/>
+                            <TextBlock x:Name="InspectorHash" Foreground="#94a3b8" FontFamily="Consolas" FontSize="10" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                            <TextBlock x:Name="InspectorSigner" Foreground="#94a3b8" FontFamily="Consolas" FontSize="10" TextWrapping="Wrap"/>
+                            <TextBlock x:Name="InspectorCommandLine" Foreground="#94a3b8" FontFamily="Consolas" FontSize="10" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="200"/>
+                </Grid.RowDefinitions>
+                <ListBox x:Name="ProcessList" Grid.Row="0" FontFamily="Consolas" FontSize="10" Background="#111a2e" Foreground="#e8ecf5" BorderThickness="0"/>
+                <TextBlock Grid.Row="1" Text="Anomalies" Foreground="#f87171" FontWeight="Bold" Margin="4,8,0,4"/>
+                <ListBox x:Name="AnomalyList" Grid.Row="2" FontFamily="Consolas" FontSize="10" Background="#1a1017" Foreground="#fecaca" BorderThickness="1" BorderBrush="#7f1d1d"/>
+            </Grid>
+        </Grid>
+    </DockPanel>
+</Window>
