@@ -20,6 +20,23 @@
             <TextBlock Text="Filter:" Foreground="#94a3b8" VerticalAlignment="Center" Margin="0,0,6,0"/>
             <TextBox x:Name="FilterBox" Width="220" TextChanged="FilterBox_TextChanged"/>
             <Button x:Name="FreezeButton" Content="Freeze frame" Width="110" Margin="16,0,0,0" Click="FreezeButton_Click"/>
+
+            <TextBlock Text="Zoom:" Foreground="#94a3b8" VerticalAlignment="Center" Margin="20,0,6,0"/>
+            <Button x:Name="ZoomOutButton" Content="-" Width="28" Click="ZoomOutButton_Click"
+                    ToolTip="Zoom out (mouse wheel down over the diagram)"/>
+            <Button x:Name="ZoomInButton" Content="+" Width="28" Margin="4,0,0,0" Click="ZoomInButton_Click"
+                    ToolTip="Zoom in (mouse wheel up over the diagram)"/>
+            <TextBlock x:Name="ZoomText" Text="100%" Foreground="#5eead4" VerticalAlignment="Center"
+                       Width="48" TextAlignment="Center" FontFamily="Consolas"/>
+            <Button x:Name="ResetViewButton" Content="Reset view" Width="90" Click="ResetViewButton_Click"
+                    ToolTip="Back to 100% and centred (double-click the diagram does the same)"/>
+            <TextBlock Text="drag to pan" Foreground="#475569" VerticalAlignment="Center" Margin="10,0,0,0" FontSize="11"/>
+
+            <ToggleButton x:Name="DebugToggle" Content="Debug" Width="70" Margin="20,0,0,0"
+                          IsChecked="True" Checked="DebugToggle_Changed" Unchecked="DebugToggle_Changed"
+                          ToolTip="Frame timing / layout / capture diagnostics, on-canvas and to a log file"/>
+            <TextBlock x:Name="DebugPathText" Foreground="#475569" VerticalAlignment="Center" Margin="10,0,0,0"
+                       FontSize="10" TextTrimming="CharacterEllipsis" MaxWidth="320"/>
         </StackPanel>
         <Grid>
             <Grid.ColumnDefinitions>
@@ -29,7 +46,11 @@
             <Border Grid.Column="0" BorderBrush="#1e293b" BorderThickness="1" Margin="0,0,10,0">
                 <Grid>
                     <skia:SKElement x:Name="GraphCanvas" PaintSurface="GraphCanvas_PaintSurface" SizeChanged="GraphCanvas_SizeChanged"
-                                    MouseLeftButtonDown="GraphCanvas_MouseLeftButtonDown"/>
+                                    MouseLeftButtonDown="GraphCanvas_MouseLeftButtonDown"
+                                    MouseLeftButtonUp="GraphCanvas_MouseLeftButtonUp"
+                                    MouseMove="GraphCanvas_MouseMove"
+                                    MouseWheel="GraphCanvas_MouseWheel"
+                                    ClipToBounds="True"/>
                     <Border x:Name="InspectorPanel" Visibility="Collapsed" Background="#0b1120" Opacity="0.92"
                             BorderBrush="#5eead4" BorderThickness="1" CornerRadius="4"
                             HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10" Padding="10" MinWidth="260" MaxWidth="360">

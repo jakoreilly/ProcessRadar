@@ -130,8 +130,9 @@ public sealed class ProcessGraph
 
     /// <summary>Drops dead nodes past their retention window (long enough for a flash-and-fade UI),
     /// and injection edges older than <see cref="InjectionEdgeRetention"/> so the buffer doesn't
-    /// grow unbounded over a long-running trace.</summary>
-    public void Purge(DateTime now)
+    /// grow unbounded over a long-running trace. Returns the counts so the caller can log them -
+    /// a purge that suddenly gets expensive is one of the ways the UI thread stalls.</summary>
+    public (int Nodes, int Edges) Purge(DateTime now)
     {
         lock (_gate)
         {
@@ -148,6 +149,8 @@ public sealed class ProcessGraph
                 .ToList();
             foreach (var key in deadEdges)
                 _injectionEdges.Remove(key);
+
+            return (dead.Count, deadEdges.Count);
         }
     }
 
