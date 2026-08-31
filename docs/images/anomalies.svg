@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 300" width="900" height="300" font-family="ui-sans-serif, -apple-system, Segoe UI, Roboto, sans-serif">
+  <rect width="900" height="300" rx="14" fill="#0e1116"/>
+
+  <text x="24" y="34" fill="#93a1b3" font-size="11.5" font-weight="600" letter-spacing=".07em">ON A LIVE TRACE — FOUR HEURISTICS, EACH GLOWS THE NODE RED FOR 2.5s</text>
+
+  <rect x="24" y="48" width="416" height="96" rx="10" fill="#161b23" stroke="#2a323f"/>
+  <rect x="24" y="48" width="4" height="96" fill="#f0b429"/>
+  <text x="42" y="72" fill="#e6edf3" font-size="12.5" font-weight="650">unsigned interpreter, trusted-app parent</text>
+  <text x="42" y="92" fill="#93a1b3" font-size="10.5">cmd · powershell · rundll32 · mshta spawned by</text>
+  <text x="42" y="107" fill="#93a1b3" font-size="10.5">Office, a browser, or a PDF reader</text>
+  <text x="42" y="128" fill="#5b6878" font-size="10">the textbook first move after a malicious document</text>
+
+  <rect x="460" y="48" width="416" height="96" rx="10" fill="#161b23" stroke="#2a323f"/>
+  <rect x="460" y="48" width="4" height="96" fill="#f0b429"/>
+  <text x="478" y="72" fill="#e6edf3" font-size="12.5" font-weight="650">module from a non-standard path</text>
+  <text x="478" y="92" fill="#93a1b3" font-size="10.5">a DLL loaded from outside \Windows and</text>
+  <text x="478" y="107" fill="#93a1b3" font-size="10.5">\Program Files</text>
+  <text x="478" y="128" fill="#5b6878" font-size="10">where a side-loaded payload usually sits</text>
+
+  <rect x="24" y="156" width="416" height="96" rx="10" fill="#161b23" stroke="#2a323f"/>
+  <rect x="24" y="156" width="4" height="96" fill="#f0b429"/>
+  <text x="42" y="180" fill="#e6edf3" font-size="12.5" font-weight="650">orphan process</text>
+  <text x="42" y="200" fill="#93a1b3" font-size="10.5">the parent pid is not in the tree at all</text>
+  <text x="42" y="236" fill="#5b6878" font-size="10">routine at startup; worth a look once things settle</text>
+
+  <rect x="460" y="156" width="416" height="96" rx="10" fill="#161b23" stroke="#2a323f"/>
+  <rect x="460" y="156" width="4" height="96" fill="#f0b429"/>
+  <text x="478" y="180" fill="#e6edf3" font-size="12.5" font-weight="650">cross-process memory write</text>
+  <text x="478" y="200" fill="#93a1b3" font-size="10.5">VirtualMemAlloc into another process's</text>
+  <text x="478" y="215" fill="#93a1b3" font-size="10.5">address space</text>
+  <text x="478" y="236" fill="#5b6878" font-size="10">held on the graph as a red edge for 30s</text>
+
+  <text x="24" y="280" fill="#93a1b3" font-size="10">Heuristics over the parent/child map, path and loaded modules. False positives on a normal desktop are expected;</text>
+  <text x="24" y="294" fill="#93a1b3" font-size="10">an intrusion that doesn't fit one of these shapes is missed. This is a triage aid, not a detection engine.</text>
+</svg>

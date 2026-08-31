@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 480" width="900" height="480" font-family="ui-sans-serif, -apple-system, Segoe UI, Roboto, sans-serif">
+  <defs>
+    <marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#5eb3ff"/></marker>
+    <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#52d18b"/></marker>
+    <marker id="w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#f0b429"/></marker>
+  </defs>
+
+  <rect width="900" height="480" rx="14" fill="#0e1116"/>
+
+  <!-- capture -->
+  <text x="24" y="34" fill="#93a1b3" font-size="11.5" font-weight="600" letter-spacing=".08em">CAPTURE</text>
+  <rect x="24" y="46" width="178" height="112" rx="12" fill="#161b23" stroke="#2a323f"/>
+  <text x="40" y="70" fill="#e6edf3" font-size="13" font-weight="650">WMI snapshot</text>
+  <text x="40" y="89" fill="#93a1b3" font-size="10.5">full process state, on demand</text>
+  <text x="40" y="104" fill="#93a1b3" font-size="10.5">pid · parent · path · start time</text>
+  <text x="40" y="122" fill="#52d18b" font-size="10">works unelevated</text>
+  <text x="40" y="140" fill="#5b6878" font-size="10">→ the Snapshot view</text>
+
+  <rect x="24" y="176" width="178" height="150" rx="12" fill="#161b23" stroke="#f0b429" stroke-opacity=".4"/>
+  <text x="40" y="200" fill="#e6edf3" font-size="13" font-weight="650">ETW kernel session</text>
+  <text x="40" y="219" fill="#93a1b3" font-size="10.5">ProcessStart / ProcessStop</text>
+  <text x="40" y="234" fill="#93a1b3" font-size="10.5">ThreadStart  (thread → owner)</text>
+  <text x="40" y="249" fill="#f0b429" font-size="10.5">VirtualMemAlloc</text>
+  <text x="40" y="267" fill="#93a1b3" font-size="10">streams live — spawns animate in</text>
+  <text x="40" y="285" fill="#f0b429" font-size="10">needs admin</text>
+  <text x="40" y="308" fill="#5b6878" font-size="9.5">no Threat-Intelligence provider here —</text>
+  <text x="40" y="321" fill="#5b6878" font-size="9.5">that one is antimalware-only</text>
+
+  <!-- graph -->
+  <rect x="226" y="40" width="248" height="300" rx="14" fill="#12171f" stroke="#2a323f"/>
+  <text x="242" y="62" fill="#93a1b3" font-size="11.5" font-weight="600" letter-spacing=".08em">PROCESS GRAPH</text>
+  <rect x="240" y="76" width="220" height="76" rx="10" fill="#161b23" stroke="#2a323f"/>
+  <text x="254" y="98" fill="#e6edf3" font-size="12.5" font-weight="650">parent / child tree</text>
+  <text x="254" y="114" fill="#93a1b3" font-size="10">one lock · snapshot seeds it,</text>
+  <text x="254" y="128" fill="#93a1b3" font-size="10">ETW keeps it live</text>
+  <text x="254" y="143" fill="#5b6878" font-size="9.5">roots = System, services, orphans</text>
+  <rect x="240" y="164" width="220" height="58" rx="10" fill="#161b23" stroke="#2a323f"/>
+  <text x="254" y="185" fill="#e6edf3" font-size="12" font-weight="650">module enrichment</text>
+  <text x="254" y="201" fill="#93a1b3" font-size="10">Process.Modules · ≤ 50 per process</text>
+  <text x="254" y="215" fill="#5b6878" font-size="9.5">protected / exited just skip</text>
+  <rect x="240" y="234" width="220" height="52" rx="10" fill="#161b23" stroke="#2a323f"/>
+  <text x="254" y="254" fill="#e6edf3" font-size="12" font-weight="650">retention</text>
+  <text x="254" y="270" fill="#93a1b3" font-size="10">dead nodes 10s · injection edges 30s</text>
+  <text x="242" y="314" fill="#5b6878" font-size="9.5">everything downstream reads this one model</text>
+
+  <!-- analysis -->
+  <rect x="498" y="60" width="178" height="132" rx="12" fill="#161b23" stroke="#f0b429" stroke-opacity=".4"/>
+  <text x="512" y="82" fill="#e6edf3" font-size="12.5" font-weight="650">AnomalyDetector</text>
+  <text x="512" y="100" fill="#93a1b3" font-size="10">4 heuristics over the tree,</text>
+  <text x="512" y="114" fill="#93a1b3" font-size="10">path and loaded modules</text>
+  <text x="512" y="132" fill="#5b6878" font-size="9.5">unsigned-from-targeted-app,</text>
+  <text x="512" y="145" fill="#5b6878" font-size="9.5">odd module path, orphan,</text>
+  <text x="512" y="158" fill="#5b6878" font-size="9.5">cross-process alloc</text>
+  <text x="512" y="180" fill="#f0b429" font-size="10">→ node glows red for 2.5s</text>
+
+  <rect x="498" y="212" width="178" height="110" rx="12" fill="#161b23" stroke="#2a323f"/>
+  <text x="512" y="234" fill="#e6edf3" font-size="12.5" font-weight="650">RadialTreeLayout</text>
+  <text x="512" y="252" fill="#93a1b3" font-size="10">stateless — recomputed</text>
+  <text x="512" y="266" fill="#93a1b3" font-size="10">fresh every frame</text>
+  <text x="512" y="284" fill="#5b6878" font-size="9.5">siblings sorted by pid,</text>
+  <text x="512" y="297" fill="#5b6878" font-size="9.5">so the diagram can't churn</text>
+  <text x="512" y="313" fill="#5b6878" font-size="9.5">one ring per generation</text>
+
+  <!-- render -->
+  <rect x="698" y="94" width="180" height="204" rx="12" fill="#161b23" stroke="#52d18b" stroke-opacity=".4"/>
+  <text x="712" y="116" fill="#e6edf3" font-size="12" font-weight="650">ProcessGraphRenderer</text>
+  <text x="712" y="128" fill="#93a1b3" font-size="10">SkiaSharp canvas</text>
+  <line x1="712" y1="138" x2="864" y2="138" stroke="#2a323f"/>
+  <text x="712" y="157" fill="#93a1b3" font-size="10">radial tree, animated</text>
+  <text x="712" y="173" fill="#93a1b3" font-size="10">spawn → pop in</text>
+  <text x="712" y="189" fill="#93a1b3" font-size="10">exit → flash &amp; fade</text>
+  <text x="712" y="205" fill="#f0b429" font-size="10">flagged alloc → red dashed edge</text>
+  <text x="712" y="223" fill="#93a1b3" font-size="10">zoom · pan · reset</text>
+  <text x="712" y="239" fill="#93a1b3" font-size="10">off-screen nodes culled</text>
+  <text x="712" y="262" fill="#5b6878" font-size="9.5">device-scale aware (150% DPI)</text>
+  <text x="712" y="278" fill="#5b6878" font-size="9.5">Freeze pauses the whole thing</text>
+
+  <!-- injection signal -->
+  <rect x="300" y="372" width="384" height="70" rx="10" fill="#161b23" stroke="#f0b429" stroke-opacity=".5"/>
+  <text x="316" y="394" fill="#e6edf3" font-size="12" font-weight="650">injection signal</text>
+  <text x="316" y="412" fill="#93a1b3" font-size="10">VirtualMemAlloc whose acting thread's process ≠ the target</text>
+  <text x="316" y="427" fill="#5b6878" font-size="9.5">= VirtualAllocEx-style remote allocation. the write itself is never observed.</text>
+
+  <!-- arrows -->
+  <path d="M202 100 L222 120" stroke="#5eb3ff" stroke-width="2" marker-end="url(#b)"/>
+  <path d="M202 240 L222 180" stroke="#f0b429" stroke-width="2" marker-end="url(#w)"/>
+  <path d="M474 130 L494 126" stroke="#5eb3ff" stroke-width="2" marker-end="url(#b)"/>
+  <path d="M474 210 L494 252" stroke="#5eb3ff" stroke-width="2" marker-end="url(#b)"/>
+  <path d="M676 140 L694 150" stroke="#f0b429" stroke-width="2" marker-end="url(#w)"/>
+  <path d="M676 258 L694 210" stroke="#52d18b" stroke-width="2" marker-end="url(#g)"/>
+  <path d="M150 326 L300 400" stroke="#f0b429" stroke-width="2" marker-end="url(#w)"/>
+  <path d="M684 402 L716 298" stroke="#f0b429" stroke-width="2" marker-end="url(#w)"/>
+
+  <!-- banner -->
+  <text x="24" y="464" fill="#93a1b3" font-size="10.5">read-only — Process Radar watches. It never injects, suspends, terminates, or modifies another process.</text>
+</svg>
